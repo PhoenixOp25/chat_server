@@ -34,4 +34,10 @@ const emitEvent = (req, event, users, data) => {
   // const usersSocket = getSockets(users);
   // io.to(usersSocket).emit(event, data);
 };
-  export {connectDB,sendToken,cookieOptions,emitEvent}
+
+const deletFilesFromCloudinary = async (public_ids) => {
+  // Delete files from cloudinary
+};
+
+
+  export {connectDB,sendToken,cookieOptions,emitEvent,deletFilesFromCloudinary}
