@@ -14,6 +14,8 @@ import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors"
 import {v2 as cloudinary} from 'cloudinary'
+import { corsOptions } from "./constants/config.js";
+import { socketAuthenticator } from "./middlewares/auth.js";
 // import mongoose from "mongoose";
 // mongoose.connect("mongodb://127.0.0.1:27017").then(() => {
 //     console.log("Connected to MongoDB");
@@ -35,14 +37,13 @@ dotenv.config({
 const onlineUsers = new Set();
 const app=express();
 const server=createServer(app)
-const io=new Server(server,{})
+const io=new Server(server,{
+    cors:corsOptions
+})
 //use middllewares
 app.use(express.json())
 app.use(cookieParser());
-app.use(cors({
-    origin:["http://localhost:5173","http://localhost:3000",process.env.CLIENT_URL],
-    credentials:true,
-}))
+app.use(cors(corsOptions))
 //app.use(express.urlencoded())
 connectDB(mongoURI)
 
@@ -61,15 +62,19 @@ app.get("/",(req,res)=>{
     res.send("hello world");
 })
 
-io.use((socket,next)=>{})
+io.use((socket,next)=>{
+    cookieParser()(
+        socket.request,
+        socket.request.res,
+        async (err) => await socketAuthenticator(err, socket, next)
+      );
+})
 
 
 io.on("connection",(socket)=>{
     console.log("user connected...",socket.id);
-    const user = {
-        _id:"iuyg",
-        name:"utguj"
-    }
+    const user = socket.user;
+    //console.log(user);
     userSocketIDs.set(user._id.toString(), socket.id);
 console.log(userSocketIDs)
     socket.on(NEW_MESSAGE,async({ chatId, members, message })=>{
@@ -89,6 +94,7 @@ console.log(userSocketIDs)
             sender: user._id,
             chat: chatId,
           };
+          console.log("emmiting",messageForRealTime)
           const membersSocket=getSockets(members);
           io.to(membersSocket).emit(NEW_MESSAGE, {
             chatId,
