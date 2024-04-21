@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import { errorMiddleware } from "./middlewares/error.js";
 import { Server } from "socket.io";
 import {createServer} from "http"
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS } from "./constants/events.js";
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { v4 as uuid } from "uuid";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
@@ -41,6 +41,7 @@ const io=new Server(server,{
     cors:corsOptions
 })
 //use middllewares
+app.set("io",io)
 app.use(express.json())
 app.use(cookieParser());
 app.use(cors(corsOptions))
@@ -94,13 +95,13 @@ console.log(userSocketIDs)
             sender: user._id,
             chat: chatId,
           };
-          console.log("emmiting",messageForRealTime)
-          const membersSocket=getSockets(members);
-          io.to(membersSocket).emit(NEW_MESSAGE, {
-            chatId,
-            message: messageForRealTime,
-          });
-          io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+          //console.log("emmiting",messageForRealTime)
+          const membersSocket = getSockets(members);
+    io.to(membersSocket).emit(NEW_MESSAGE, {
+      chatId,
+      message: messageForRealTime,
+    });
+    io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
         //console.log("new msg",messageForRealTime);
         try {
             await Message.create(messageForDB);
@@ -108,6 +109,15 @@ console.log(userSocketIDs)
             throw new Error(error);
           }
     })
+    socket.on(START_TYPING, ({ members, chatId }) => {
+      const membersSockets = getSockets(members);
+      socket.to(membersSockets).emit(START_TYPING, { chatId });
+    });
+    
+    socket.on(STOP_TYPING, ({ members, chatId }) => {
+      const membersSockets = getSockets(members);
+      socket.to(membersSockets).emit(STOP_TYPING, { chatId });
+    });
 
 
     socket.on("disconnect",()=>{
@@ -115,6 +125,7 @@ console.log(userSocketIDs)
         userSocketIDs.delete(user._id.toString());
     })
 })
+
 
 
 app.use(errorMiddleware);

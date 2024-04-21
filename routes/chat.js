@@ -25,7 +25,7 @@ import { isAuthenticated } from "../middlewares/auth.js";
 import { addMembers, deleteChat, getChatDetails, getMessages, getMyChats, getMyGroups, leaveGroup, newGroupChat, removeMember, renameGroup, sendAttachments } from "../controllers/chat.js";
 import { attachmentMulter } from "../middlewares/multer.js";
 import { addMemberValidator, chatIdValidator, newGroupValidator, removeMemberValidator, renameValidator, sendAttachmentsValidator, validateHandler } from "../lib/validators.js";
-// import { attachmentsMulter } from "../middlewares/multer.js";
+ 
 
 const app = express.Router();
 
@@ -52,10 +52,11 @@ app.put(
   sendAttachmentsValidator(),
  validateHandler,
  app.post(
-  "/message",attachmentMulter
-  ,sendAttachmentsValidator(),
+  "/message",
+  attachmentMulter,
+  sendAttachmentsValidator(),
   validateHandler,
-   sendAttachments
+  sendAttachments
 );
 
 

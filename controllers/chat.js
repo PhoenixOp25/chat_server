@@ -1,6 +1,6 @@
 import { TryCatch } from "../middlewares/error.js";
 import {Chat} from '../models/chat.js'
-import { deletFilesFromCloudinary, emitEvent } from "../utils/features.js";
+import { deletFilesFromCloudinary, emitEvent, uploadFilesToCloudinary } from "../utils/features.js";
 import {
     ALERT,
    NEW_MESSAGE,
@@ -210,11 +210,66 @@ const newGroupChat = TryCatch(async (req, res, next) => {
       message: "Leave Group Successfully",
     });
   });
+  // const sendAttachments = TryCatch(async (req, res, next) => {
+  //   const { chatId } = req.body;
+  
+  //   const files = req.files || [];
+  
+  //   if (files.length < 1)
+  //     return next(new ErrorHandler("Please Upload Attachments", 400));
+  
+  //   if (files.length > 5)
+  //     return next(new ErrorHandler("Files Can't be more than 5", 400));
+  
+  //   const [chat, me] = await Promise.all([
+  //     Chat.findById(chatId),
+  //     User.findById(req.user, "name"),
+  //   ]);
+  
+  //   if (!chat) return next(new ErrorHandler("Chat not found", 404));
+  
+  //   if (files.length < 1)
+  //     return next(new ErrorHandler("Please provide attachments", 400));
+  
+  //   //   Upload files here
+  //   await uploadFilesToCloudinary(files);
+  //    const attachments =[] ;
+  
+  //   const messageForDB = {
+  //     content: "",
+  //     attachments,
+  //     sender: me._id,
+  //     chat: chatId,
+  //   };
+  
+  //   const messageForRealTime = {
+  //     ...messageForDB,
+  //     sender: {
+  //       _id: me._id,
+  //       name: me.name,
+  //     },
+      
+  //   };
+  
+  //   const message = await Message.create(messageForDB);
+  
+  //   emitEvent(req, NEW_MESSAGE, chat.members, {
+  //     message: messageForRealTime,
+  //     chatId,
+  //   });
+  
+  //   emitEvent(req, NEW_MESSAGE_ALERT, chat.members, { chatId });
+  
+  //   return res.status(200).json({
+  //     success: true,
+  //     message,
+  //   });
+  // });
   const sendAttachments = TryCatch(async (req, res, next) => {
     const { chatId } = req.body;
   
     const files = req.files || [];
-  
+  console.log(files);
     if (files.length < 1)
       return next(new ErrorHandler("Please Upload Attachments", 400));
   
@@ -232,8 +287,7 @@ const newGroupChat = TryCatch(async (req, res, next) => {
       return next(new ErrorHandler("Please provide attachments", 400));
   
     //   Upload files here
-   // await uploadFilesToCloudinary(files);
-     const attachments =[] ;
+    const attachments = await uploadFilesToCloudinary(files);
   
     const messageForDB = {
       content: "",
@@ -248,7 +302,6 @@ const newGroupChat = TryCatch(async (req, res, next) => {
         _id: me._id,
         name: me.name,
       },
-      
     };
   
     const message = await Message.create(messageForDB);
@@ -265,7 +318,6 @@ const newGroupChat = TryCatch(async (req, res, next) => {
       message,
     });
   });
-
 const getChatDetails = TryCatch(async (req, res, next) => {
   if (req.query.populate === "true") {
     const chat = await Chat.findById(req.params.id)
