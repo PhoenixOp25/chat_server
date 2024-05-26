@@ -5,7 +5,7 @@ import { adminOnly } from "../middlewares/auth.js";
 
 
 const app = express.Router();
-//, adminLoginValidator(), validateHandler, adminLogin), adminLogout
+
 app.post("/verify",adminLoginValidator(),validateHandler,adminLogin);
 
 app.get("/logout",adminLogout);

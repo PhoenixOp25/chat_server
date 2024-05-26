@@ -122,7 +122,7 @@ const getMyProfile = async (req, res, next) => {
    
     const acceptFriendRequest = TryCatch(async (req, res, next) => {
       const { requestId, accept } = req.body;
-    console.log(req.body)
+    //console.log(req.body)
       const request = await Request.findById(requestId)
         .populate("sender", "name")
         .populate("receiver", "name");

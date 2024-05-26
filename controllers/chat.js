@@ -344,7 +344,7 @@ const renameGroup = TryCatch(async (req, res, next) => {
       );
     }
   
-    //   Here we have to delete All Messages and ( attachments or files) from cloudinary
+    //   Here we have to dete All Messages as well as attachments or files from cloudinary
   
     const messagesWithAttachments = await Message.find({
       chat: chatId,
