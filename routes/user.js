@@ -7,7 +7,11 @@ import { isAuthenticated } from "../middlewares/auth.js";
 import { acceptRequestValidator, loginValidator, registerValidator, sendRequestValidator, validateHandler } from "../lib/validators.js";
 
 // Use cors middleware to enable CORS for specific origin and allow credentials
-
+app.use(function (request, response, next) {
+    response.header("Access-Control-Allow-Origin", "*");
+    response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
 
 app.post("/new",singleAvatar,registerValidator(),validateHandler,newUser);
 app.post("/login",loginValidator(),validateHandler,login);
