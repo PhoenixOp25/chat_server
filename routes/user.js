@@ -7,11 +7,7 @@ import { isAuthenticated } from "../middlewares/auth.js";
 import { acceptRequestValidator, loginValidator, registerValidator, sendRequestValidator, validateHandler } from "../lib/validators.js";
 
 // Use cors middleware to enable CORS for specific origin and allow credentials
-app.use(cors({
-    origin: ['http://localhost:5173', 'https://chat-frontend-zeta-bice.vercel.app'],
-    credentials: true
-  }));
-  
+
 
 app.post("/new",singleAvatar,registerValidator(),validateHandler,newUser);
 app.post("/login",loginValidator(),validateHandler,login);
