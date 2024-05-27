@@ -8,6 +8,11 @@ import { cookieOptions } from "../utils/features.js";
 import { adminSecretKey } from "../app.js";
 
 
+const getAdminData = TryCatch(async (req, res, next) => {
+  return res.status(200).json({
+    admin: true,
+  });
+});
 
 const allUsers = TryCatch(async (req, res) => {
     const users = await User.find({});
@@ -113,7 +118,6 @@ const allUsers = TryCatch(async (req, res) => {
   
     const last7DaysMessages = await Message.find({
       createdAt: {
-        //gte=greater then,lte=lesser then
         $gte: last7Days,
         $lte: today,
       },
@@ -154,7 +158,7 @@ const allUsers = TryCatch(async (req, res) => {
   
     return res
       .status(200)
-      .cookie("chattu-admin-token", token, {
+      .cookie("chat-admin-token", token, {
         ...cookieOptions,
         maxAge: 1000 * 60 * 15,
       })
@@ -167,7 +171,7 @@ const allUsers = TryCatch(async (req, res) => {
   const adminLogout = TryCatch(async (req, res, next) => {
     return res
       .status(200)
-      .cookie("chattu-admin-token", "", {
+      .cookie("chat-admin-token", "", {
         ...cookieOptions,
         maxAge: 0,
       })
@@ -176,10 +180,6 @@ const allUsers = TryCatch(async (req, res) => {
         message: "Logged Out Successfully Bro",
       });
   });
-  const getAdminData = TryCatch(async (req, res, next) => {
-    return res.status(200).json({
-      admin: true,
-    });
-  });
+
 
   export {allUsers,allChats,allMessages,getDashboardStats,adminLogin,adminLogout,getAdminData}

@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import { errorMiddleware } from "./middlewares/error.js";
 import { Server } from "socket.io";
 import {createServer} from "http"
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from "./constants/events.js";
+import { CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { v4 as uuid } from "uuid";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
@@ -73,11 +73,11 @@ io.use((socket,next)=>{
 
 
 io.on("connection",(socket)=>{
-    console.log("user connected...",socket.id);
+    //console.log("user connected...",socket.id);
     const user = socket.user;
     //console.log(user);
     userSocketIDs.set(user._id.toString(), socket.id);
-console.log(userSocketIDs)
+//console.log(userSocketIDs)
     socket.on(NEW_MESSAGE,async({ chatId, members, message })=>{
         const messageForRealTime = {
             content: message,
@@ -119,10 +119,22 @@ console.log(userSocketIDs)
       socket.to(membersSockets).emit(STOP_TYPING, { chatId });
     });
 
+    socket.on(CHAT_JOINED,({userId,memebers})=>{
+      onlineUsers.add(userId.toString());
+      const membersSocket=getSockets(memebers);
+      io.to(membersSocket).emit(ONLINE_USERS,Array.from(onlineUsers));
+    });
+    socket.on(CHAT_LEAVED,({userId,memebers})=>{
+      onlineUsers.delete(userId.toString());
+      const membersSocket=getSockets(memebers);
+      io.to(membersSocket).emit(ONLINE_USERS,Array.from(onlineUsers));
+    })
 
     socket.on("disconnect",()=>{
-        console.log("user disconnected bro...");
+        //console.log("user disconnected bro...");
         userSocketIDs.delete(user._id.toString());
+        onlineUsers.delete(user._id.toString());
+        socket.broadcast.emit(ONLINE_USERS,Array.from(onlineUsers));
     })
 })
 
